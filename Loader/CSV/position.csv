@@ -1,0 +1,29 @@
+Position ID,Position Name
+1,Goalkeeper
+2,Right Back
+3,Right Center Back
+5,Left Center Back
+6,Left Back
+9,Right Defensive Midfield
+11,Left Defensive Midfield
+12,Right Midfield
+16,Left Midfield
+22,Right Center Forward
+24,Left Center Forward
+10,Center Defensive Midfield
+13,Right Center Midfield
+15,Left Center Midfield
+23,Center Forward
+44,Set
+43,Prone
+17,Right Wing
+21,Left Wing
+19,Center Attacking Midfield
+42,Moving
+4,Center Back
+7,Right Wing Back
+8,Left Wing Back
+18,Right Attacking Midfield
+20,Left Attacking Midfield
+14,Center Midfield
+0,Substitute
