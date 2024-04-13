@@ -15,22 +15,18 @@ with psycopg.connect("dbname=project_database user=postgres password=1234") as d
                 teamName AS team_name,
                 COUNT(*) AS num_shots
             FROM
-                Shot
-            WHERE
-                shot.season_Name = '2003/2004'
-                AND shot.competition_Name = 'Premier League'
+                Premier_League_Shot_2003_2004
             GROUP BY
                 teamName
             HAVING
-                COUNT(*) >= 1 -- Considering only teams that made at least one shot
+                COUNT(*) >= 1 
             ORDER BY
                 num_shots DESC;
-
             """
         )
         end_time = time.time()
         execution = end_time - start_time
-        print(f"Execution time: {execution} seconds")
+        print(f"{execution}")
         result = cursor.fetchall()
     
     with open('Q6.csv', 'w', encoding='utf-8', newline='') as file: # write the output to a csv file called Q_6.csv

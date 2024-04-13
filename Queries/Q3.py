@@ -13,21 +13,26 @@ with psycopg.connect("dbname=project_database user=postgres password=1234") as d
                             playerName AS player_name,
                             COUNT(*) AS num_first_time_shots
                         FROM
-                            Shot
+                            (
+                                SELECT * FROM Shot_2020_2021
+                                UNION ALL
+                                SELECT * FROM Shot_2019_2020
+                                UNION ALL
+                                SELECT * FROM Shot_2018_2019
+                            ) AS ShotCombined 
                         WHERE
-                            season_Name IN ('2020/2021', '2019/2020', '2018/2019') -- Considering multiple seasons
-                            AND competition_Name = 'La Liga' -- Assuming the competition name is 'La Liga'
-                            AND firstTime = TRUE -- Considering only first-time shots
+                            competition_Name = 'La Liga'
+                            AND firstTime = TRUE 
                         GROUP BY
                             playerName
                         HAVING
-                            COUNT(*) >= 1 -- Considering only players who made at least one shot
+                            COUNT(*) >= 1 
                         ORDER BY
                             num_first_time_shots DESC;
                        """)       
         end_time = time.time()
         execution = end_time - start_time
-        print(f"Execution time: {execution} seconds")
+        print(f"{execution}")
         result = cursor.fetchall()
     
     with open('Q3.csv', 'w', encoding='utf-8', newline='') as file: 

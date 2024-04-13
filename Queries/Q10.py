@@ -16,21 +16,19 @@ with psycopg.connect("dbname=project_database user=postgres password=1234") as d
     with db.cursor() as cursor:
         
         sql_query = """
-            SELECT events.player_name, COUNT(*) AS dribbled_past
-            FROM events
-            WHERE events.season_name = '2020/2021'
-                AND events.competition_name = 'La Liga'
-                AND events.type_name = 'Dribbled Past'
-            GROUP BY events.player_name
+            SELECT player_name, COUNT(*) AS dribbled_past
+            FROM Event_DribblePast
+            WHERE season_name = '2020/2021'
+                AND competition_name = 'La Liga'
+            GROUP BY player_name
             HAVING COUNT(*) >= 1
             ORDER BY dribbled_past ASC;
         """
-# Now you can use the sql_query string in your code as needed.
         start_time = time.time()
         cursor.execute(sql_query)
         end_time = time.time()
         execution = end_time - start_time
-        print(f"Execution time: {execution} seconds")
+        print(f"{execution}")
         result = cursor.fetchall()
     
     with open('Q10.csv', 'w', encoding='utf-8', newline='') as file: # write the output to a csv file called Q_10.csv

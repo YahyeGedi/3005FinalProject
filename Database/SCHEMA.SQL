@@ -21,6 +21,7 @@ CREATE TABLE Competitions (
 
 CREATE TABLE Referee (
     referees_Id INT UNIQUE ,
+    PRIMARY KEY (referees_Id),
     referees_Name VARCHAR(255) NOT NULL,
     referees_Country VARCHAR(255) NOT NULL,
     FOREIGN KEY (referees_Country)
@@ -101,11 +102,12 @@ CREATE TABLE Player (
     position_Id INT,
     jersey_Number INT,
     team_Name VARCHAR(255),
+    country_Name VARCHAR(255),
+    FOREIGN KEY (country_Name)
+    	REFERENCES Countries (country_name),
     FOREIGN KEY (position_Id)
         REFERENCES Position (position_Id)
 );
-
-
 
 CREATE TABLE Tactic (
     match_id INT,
@@ -124,7 +126,6 @@ CREATE TABLE PlayPattern (
 
 CREATE TABLE Events (
     event_id VARCHAR(255),
-    PRIMARY KEY(event_id),
     event_Index INT,
     event_Period INT,
     event_timeStamp TIME,
@@ -157,11 +158,15 @@ CREATE TABLE Events (
         REFERENCES Team (teams_Name),
     FOREIGN KEY (play_pattern_Id)
         REFERENCES PlayPattern (play_pattern_Id)
-);
+) PARTITION BY LIST (type_Name);
+
+CREATE TABLE Event_DribblePast PARTITION OF Events FOR VALUES IN ('Dribbled Past');
+CREATE TABLE Rest_Of_Events PARTITION OF Events
+    DEFAULT;
 
 
 CREATE TABLE Pass (
-    event_Id VARCHAR(255) PRIMARY KEY,
+    event_Id VARCHAR(255),
     playerName VARCHAR(255),
     teamName VARCHAR(255),
     recipient_Name VARCHAR(255),
@@ -196,11 +201,23 @@ CREATE TABLE Pass (
     FOREIGN KEY (teamName) REFERENCES Team (teams_Name),
     FOREIGN KEY (playerName)
     	REFERENCES Player (player_Name)
-);
+) PARTITION BY LIST (season_Name);
+
+CREATE TABLE Pass_2018_2019 PARTITION OF Pass FOR VALUES IN ('2018/2019');
+CREATE TABLE Pass_2019_2020 PARTITION OF Pass FOR VALUES IN ('2019/2020');
+CREATE TABLE Pass_2020_2021 PARTITION OF Pass FOR VALUES IN ('2020/2021')
+PARTITION BY LIST (competition_Name);
+
+CREATE TABLE Pass_2003_2004 PARTITION OF Pass FOR VALUES IN ('2003/2004')
+PARTITION BY LIST (competition_Name);
+
+CREATE TABLE La_Liga_Pass_2020_2021 PARTITION of Pass_2020_2021 FOR VALUES IN ('La Liga');
+CREATE TABLE Premier_League_Pass_2003_2004 PARTITION of Pass_2003_2004 FOR VALUES IN ('Premier League');
+
+-- Add more partitions for other seasons as needed
 
 CREATE TABLE Shot(
     event_id VARCHAR(255),
-    PRIMARY KEY(event_id),
     playerName VARCHAR(255),
     teamName VARCHAR(255),
     statsbomXg FLOAT,
@@ -227,11 +244,18 @@ CREATE TABLE Shot(
     FOREIGN KEY (teamName) REFERENCES Team (teams_Name),
     FOREIGN KEY (playerName)
     	REFERENCES Player (player_Name)
-);
+) PARTITION BY LIST (season_Name);
+
+CREATE TABLE Shot_2018_2019 PARTITION OF Shot FOR VALUES IN ('2018/2019');
+CREATE TABLE Shot_2019_2020 PARTITION OF Shot FOR VALUES IN ('2019/2020');
+CREATE TABLE Shot_2020_2021 PARTITION OF Shot FOR VALUES IN ('2020/2021');
+CREATE TABLE Shot_2003_2004 PARTITION OF Shot FOR VALUES IN ('2003/2004')
+PARTITION BY LIST (competition_Name);
+
+CREATE TABLE Premier_League_Shot_2003_2004 PARTITION of Shot_2003_2004 FOR VALUES IN ('Premier League');
 
 CREATE TABLE Dribble(
     event_id VARCHAR(255),
-    PRIMARY KEY(event_id),
     playerName VARCHAR(255),
     teamName VARCHAR(255),
     overrun BOOLEAN,
@@ -248,7 +272,12 @@ CREATE TABLE Dribble(
         REFERENCES Team (teams_Name),
     FOREIGN KEY (playerName)
     	REFERENCES Player (player_Name)
-);
+) PARTITION BY LIST (season_Name);
+
+CREATE TABLE Dribble_2018_2019 PARTITION OF Dribble FOR VALUES IN ('2018/2019');
+CREATE TABLE Dribble_2019_2020 PARTITION OF Dribble FOR VALUES IN ('2019/2020');
+CREATE TABLE Dribble_2020_2021 PARTITION OF Dribble FOR VALUES IN ('2020/2021');
+CREATE TABLE Dribble_2003_2004 PARTITION OF Dribble FOR VALUES IN ('2003/2004');
 
 CREATE TABLE badBehaviour(
     event_id VARCHAR(255),
@@ -272,7 +301,6 @@ CREATE TABLE ballReceipt(
     event_id VARCHAR(255),
     playerName VARCHAR(255),
     teamName VARCHAR(255),
-    PRIMARY KEY(event_id),
     outcomeId INT,
     outcomeName VARCHAR(255),
     match_id INT,
@@ -455,3 +483,46 @@ CREATE TABLE Substitution (
     FOREIGN KEY (teamName) REFERENCES Team (teams_Name),
     FOREIGN KEY (playerName) REFERENCES Player (player_Name)
 );
+
+CREATE TABLE lineup (
+    match_id INT,
+    team_name VARCHAR(255),
+    player_name VARCHAR(255),
+    player_nickname VARCHAR(255),
+    country_name VARCHAR(255),
+    FOREIGN KEY (match_id) REFERENCES Match (matches_Id),
+    FOREIGN KEY (team_name) REFERENCES Team (teams_Name),
+    FOREIGN KEY (player_name) REFERENCES Player (player_Name),
+    FOREIGN KEY (country_name) REFERENCES Countries (country_name)
+);
+
+CREATE TABLE lineupPositions (
+    match_id INT,
+    player_name VARCHAR(255),
+    position_id INT,
+    startFrom VARCHAR(255),
+    endTo VARCHAR(255),
+    from_period INT,
+    to_period INT,
+    start_reason VARCHAR(255),
+    end_reason VARCHAR(255),
+    FOREIGN KEY (match_id) REFERENCES Match (matches_Id),
+    FOREIGN KEY (position_id) REFERENCES Position (position_Id),
+    FOREIGN KEY (player_name) REFERENCES Player (player_Name)
+);
+
+CREATE TABLE lineupCards (
+    match_id INT,
+    player_name VARCHAR(255),
+    card_time VARCHAR(255),
+    card_type VARCHAR(255),
+    card_reason VARCHAR(255),
+    period INT,
+    FOREIGN KEY (match_id) REFERENCES Match (matches_Id),
+    FOREIGN KEY (player_name) REFERENCES Player (player_Name)
+);
+
+
+
+
+

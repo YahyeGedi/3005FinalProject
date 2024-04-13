@@ -51,7 +51,7 @@ def importToPostgreSQL():
                 
                 cy.write(data)
 
-            with cursor.copy("COPY Player (player_Id, player_Name, position_ID, jersey_Number, team_Name) FROM STDIN WITH CSV HEADER") as cy:
+            with cursor.copy("COPY Player (player_Id, player_Name, position_ID, jersey_Number, team_Name, country_Name) FROM STDIN WITH CSV HEADER") as cy:
                 with open('CSV/player.csv', 'r', encoding='utf-8') as f:
                     data = f.read()
                 
@@ -164,16 +164,35 @@ def importToPostgreSQL():
                 with open('CSV/substitution.csv', 'r', encoding='utf-8') as f:
                     data = f.read()
                 cy.write(data)
+            
+            with cursor.copy("COPY lineup (match_id, team_name, player_name, player_nickname,country_name) FROM STDIN WITH CSV HEADER") as cy:
+                with open('CSV/lineup.csv', 'r', encoding='utf-8') as f:
+                    data = f.read()
+                cy.write(data)
+            
+            with cursor.copy("COPY lineupPositions (match_id, player_name, position_id, startFrom, endTo, from_period, to_period, start_reason, end_reason) FROM STDIN WITH CSV HEADER") as cy:
+                with open('CSV/lineupPositions.csv', 'r', encoding='utf-8') as f:
+                    data = f.read()
+                cy.write(data)
+            
+            with cursor.copy("COPY lineupCards (match_id, player_name, card_time, card_type, card_reason, period) FROM STDIN WITH CSV HEADER") as cy:
+                with open('CSV/lineupCards.csv', 'r', encoding='utf-8') as f:
+                    data = f.read()
+                cy.write(data)
 
 
             
-def renewAllTables():
-    tableNames = ['Countries', 'Competitions', 'Events', 'Referee', 'Manager', 'Team', 'Stadium', 'Match', 'Position', 'Player', 'Tactic', 'PlayPattern', 'Pass', 'Shot', 'Dribble', 'badBehaviour', 'ballReceipt', 'ballRecovery', 'Block', 'Carry', 'Clearance', 'Duel', 'foulCommitted', 'foulWon', 'Goalkeeper', 'Interception', 'Substitution']
+def renewTables():
+    tableNames = ['Countries', 'Competitions', 'Events', 'Referee', 'Manager', 'Team', 'Stadium', 'Match', 'Position', 'Player', 'Tactic', 'PlayPattern', 'Pass', 'Shot', 'Dribble', 'badBehaviour', 'ballReceipt', 'ballRecovery', 'Block', 'Carry', 'Clearance', 'Duel', 'foulCommitted', 'foulWon', 'Goalkeeper', 'Interception', 'Substitution', 'lineup', 'lineupPositions', 'lineupCards']
+    indexNames = ['idx_shot_statsbomXg', 'idx_shot_playerName', 'idx_shot_firstTime', 'idx_pass_teamName', 'idx_pass_playerName', 'idx_shot_teamName', 'idx_dribble_outcomename']
     with psycopg.connect("dbname=project_database user=postgres password=1234") as db:
         with db.cursor() as cursor:
+            for index in indexNames:
+                cursor.execute(f"DROP INDEX IF EXISTS {index} CASCADE")
             for table in tableNames:
                 cursor.execute(f"DROP TABLE IF EXISTS {table} CASCADE")
-            
+
+
             with open('../Database/SCHEMA.sql', 'r') as file:
                 cursor.execute(file.read())
         db.commit()
@@ -182,7 +201,7 @@ def renewAllTables():
 
 if __name__ == "__main__":
     start = time.time()
-    renewAllTables()
+    renewTables()
     importToPostgreSQL()
     end = time.time()
     print(f"Time taken: {end - start} seconds")

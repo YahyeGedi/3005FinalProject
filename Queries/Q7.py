@@ -21,21 +21,19 @@ with psycopg.connect("dbname=project_database user=postgres password=1234") as d
                     playerName AS player_name,
                     COUNT(*) AS num_through_balls
                 FROM
-                    Pass
+                    La_Liga_Pass_2020_2021
                 WHERE
-                    pass.season_Name = '2020/2021' -- Assuming the season name format is 'YYYY/YYYY'
-                    AND Pass.techniqueName = 'Through Ball' -- Filter for through ball passes
-                    And pass.competition_Name = 'La Liga' -- Assuming the competition name is 'La Liga'
+                    techniqueName = 'Through Ball' 
                 GROUP BY
                     playerName
                 HAVING
-                    COUNT(*) >= 1 -- Considering only players who made at least one through ball pass
+                    COUNT(*) >= 1 
                 ORDER BY
                     num_through_balls DESC;
                        """)
         end_time = time.time()
         execution = end_time - start_time
-        print(f"Execution time: {execution} seconds")
+        print(f"{execution}")
         result = cursor.fetchall()
     
     with open('Q7.csv', 'w', encoding='utf-8', newline='') as file: # write the output to a csv file called Q_7.csv

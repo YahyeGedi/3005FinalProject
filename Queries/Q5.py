@@ -26,12 +26,9 @@ with psycopg.connect("dbname=project_database user=postgres password=1234") as d
                             recipient_Name AS player_name,
                             COUNT(*) AS num_passes_received
                         FROM
-                            Pass
+                            Premier_League_Pass_2003_2004
                         JOIN 
-                            Player ON Pass.recipient_name = Player.player_name
-                        WHERE
-                            Pass.season_Name = '2003/2004' -- Assuming the season name format is 'YYYY/YYYY'
-                            AND Pass.competition_Name = 'Premier League' -- Assuming the competition name is 'Premier League'
+                            Player ON recipient_name = Player.player_name
                         GROUP BY
                             recipient_Name
                         HAVING
@@ -42,7 +39,7 @@ with psycopg.connect("dbname=project_database user=postgres password=1234") as d
       
         end_time = time.time()
         execution = end_time - start_time
-        print(f"Execution time: {execution} seconds")
+        print(f"{execution}")
         result = cursor.fetchall()
     
     with open('Q5.csv', 'w', encoding='utf-8', newline='') as file: # write the output to a csv file called Q_5.csv

@@ -15,11 +15,10 @@ with psycopg.connect("dbname=project_database user=postgres password=1234") as d
                             playerName AS player_name,
                             AVG(statsbomXg) AS average_xG
                         FROM
-                            Shot
+                            Shot_2020_2021
                         WHERE
-                            statsbomXg > 0 -- Considering only players who made at least one shot (xG scores greater than 0)
-                            AND season_Name = '2020/2021' -- Assuming the season name format is 'YYYY/YYYY'
-                            AND competition_Name = 'La Liga' -- Assuming the competition name is 'La Liga'
+                            statsbomXg > 0 
+                            AND competition_Name = 'La Liga' 
                         GROUP BY
                             playerName
                         ORDER BY

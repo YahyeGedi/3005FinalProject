@@ -9,20 +9,19 @@ with psycopg.connect("dbname=project_database user=postgres password=1234") as d
                             playerName AS player_name,
                             COUNT(*) AS num_shots
                         FROM
-                            Shot
+                            Shot_2020_2021
                         WHERE
-                            season_Name = '2020/2021' -- Assuming the season name format is 'YYYY/YYYY'
-                            AND competition_Name = 'La Liga' -- Assuming the competition name is 'La Liga'
+                            competition_Name = 'La Liga'
                         GROUP BY
                             playerName
                         HAVING
-                            COUNT(*) >= 1 -- Considering only players who made at least one shot
+                            COUNT(*) >= 1 
                         ORDER BY
                             num_shots DESC;
                        """)
         end_time = time.time()
         execution = end_time - start_time
-        print(f"Execution time: {execution} seconds")
+        print(f"{execution}")
 
         result = cursor.fetchall()
     

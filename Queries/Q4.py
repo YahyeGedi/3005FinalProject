@@ -9,20 +9,17 @@ with psycopg.connect("dbname=project_database user=postgres password=1234") as d
                             teamName AS team_name,
                             COUNT(*) AS num_passes
                         FROM
-                            Pass
-                        WHERE
-                            pass.season_Name = '2020/2021'
-                            AND pass.competition_Name = 'La Liga'
+                            La_Liga_Pass_2020_2021
                         GROUP BY
                             teamName
                         HAVING
-                            COUNT(*) >= 1 -- Considering only teams that made at least one pass
+                            COUNT(*) >= 1 
                         ORDER BY
                             num_passes DESC;
                        """)        
         end_time = time.time()
         execution = end_time - start_time
-        print(f"Execution time: {execution} seconds")
+        print(f"{execution}")
         result = cursor.fetchall()
     
     with open('Q4.csv', 'w', encoding='utf-8', newline='') as file: 

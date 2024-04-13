@@ -8,8 +8,7 @@ import time
 import requests
 import os
 
-github_url = 'https://raw.githubusercontent.com/statsbomb/open-data/0067cae166a56aa80b2ef18f61e16158d6a7359a/data/events/'
-json_extension = '.json'
+
 
 competitions = []
 seasons = []
@@ -39,7 +38,9 @@ foulWon = []
 goalkeeper = []
 interception = []
 substitution = []
-
+lineup = []
+lineupPositions = []
+lineupCards = []
 
 competitions.append({
     "competition_ID": 11,
@@ -129,19 +130,7 @@ def populatingTablesFromMatch():
                     # Populating Away Manager
                     if matchdata.get('away_team') and matchdata['away_team'].get('managers'):
                         awayManager = matchdata['away_team']["managers"][0]['id']
-                        # for managerData in manager:
-                        #     if managerData['managers_Id'] == awayManager:
-                        #         managerExists = True
-                        #         break
-                        
-                        # if managerExists == False:
-                        #     manager.append({
-                        #         "managers_Id": awayManager,
-                        #         "managers_Name": matchdata['away_team']["managers"][0]['name'],
-                        #         "managers_Nickname" : matchdata['away_team']["managers"][0]['nickname'],
-                        #         "managers_date_of_Birth": matchdata['away_team']["managers"][0]['dob'],
-                        #         "managers_Country": matchdata['away_team']["managers"][0]['country']['name']
-                        #     })
+                       
                         awayManager = matchdata['away_team']["managers"][0]['id']
                         if awayManager not in [manager['managers_Id'] for manager in manager]:
                             manager.append({
@@ -1229,6 +1218,88 @@ def populatingTablesFromEvents():
                             "competition_Name": Competition_Name
                         })
 
+def populatingTablesFromLineups():
+    lineupDir = './Lineups/'
+    for filename in os.listdir(lineupDir):
+        if filename.endswith('.json'):
+            filepath = os.path.join(lineupDir, filename)
+            with open(filepath, encoding='utf-8') as file:
+                data = json.load(file)
+                for lineupdata in data:
+                    for line in lineupdata['lineup']:
+                        country_name = None
+                        if line.get('country'):
+                            countryExists = False
+                            playerExists = False
+                            country_name = line['country']['name']
+                            for country in countries:
+                                if country['country_name'] == country_name:
+                                    countryExists = True
+                                    break
+                            if not countryExists:
+                                countries.append({
+                                    "country_id": line['country']['id'],
+                                    "country_name": country_name
+                                })
+                            
+                            for players in player:
+                                if players['player_Name'] == line['player_name']:
+                                    playerExists = True
+                                    break
+                            if not playerExists:
+                                player.append({
+                                        "player_Id" : line['player_id'],
+                                        "player_Name": line['player_name'],
+                                        "position_Id" : None,
+                                        "jersey_Number": line['jersey_number'],
+                                        "team_Name": lineupdata['team_name'],
+                                        "country_Name": country_name
+                                    })
+                        lineup.append({
+                            "match_id": filename.split(".")[0],
+                            "team_name": lineupdata['team_name'],
+                            "player_name": line['player_name'],
+                            "player_nickname": line['player_nickname'],
+                            "country_name": country_name,
+                        })
+                    
+                        for pos in line['positions']:
+                            positionExists = False
+                            for posdata in position:
+                                if posdata['position_Name'] == pos['position']:
+                                    positionExists = True
+                                    break
+                            if not positionExists:
+                                position.append({
+                                    "position_Id": pos['position_id'],
+                                    "position_Name": pos['position']
+                                })
+            
+                            
+                            lineupPositions.append({
+                                "match_id": filename.split(".")[0],
+                                "player_name": line['player_name'],
+                                "position_id": pos['position_id'],
+                                "startFrom": pos['from'],
+                                "endTo": pos['to'],
+                                "from_period": pos['from_period'],
+                                "to_period": pos['to_period'],
+                                "start_reason" : pos['start_reason'],
+                                "end_reason": pos['end_reason'],
+                            })
+
+
+                        
+                        for card in line['cards']:
+                            lineupCards.append({
+                                "match_id": filename.split(".")[0],
+                                "player_name": line['player_name'],
+                                "card_time": card['time'],
+                                "card_type": card['card_type'],
+                                "card_reason": card['reason'],
+                                "period": card['period']
+                            })
+
 
 def toCSV():
     # Writing counries to CSV
@@ -1290,9 +1361,9 @@ def toCSV():
     # Writing Player to CSV
     with open('CSV/player.csv', 'w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
-        writer.writerow(["Player ID", "Player Name", "Position ID", "Jersey Number", "Team Name"])
+        writer.writerow(["Player ID", "Player Name", "Position ID", "Jersey Number", "Team Name", "Country Name"])
         for data in player:
-            writer.writerow([data['player_Id'], data['player_Name'], data['position_Id'], data['jersey_Number'], data['team_Name']])
+            writer.writerow([data['player_Id'], data['player_Name'], data['position_Id'], data['jersey_Number'], data['team_Name'], data['country_Name']])
 
     # Writing tactics to CSV
     with open('CSV/tactic.csv', 'w', newline='', encoding='utf-8') as file:
@@ -1426,7 +1497,6 @@ def toCSV():
         for data in interception:
             writer.writerow([data['event_id'], data['playerName'], data['teamName'], data['outcomeId'], data['outcomeName'], data['match_id'], data['season_Name'], data['competition_Name']])
 
-
     # Writing substitution to CSV
     with open('CSV/substitution.csv', 'w', newline='', encoding='utf-8') as file:
         writer = csv.writer(file)
@@ -1434,17 +1504,35 @@ def toCSV():
         for data in substitution:
             writer.writerow([data['event_id'], data['playerName'], data['teamName'], data['replacementId'], data['replacementName'], data['outcomeId'], data['outcomeName'], data['match_id'], data['season_Name'], data['competition_Name']])
 
+    # Writing Lineup to CSV
+    with open('CSV/lineup.csv', 'w', newline='', encoding='utf-8') as file:
+        writer = csv.writer(file)
+        writer.writerow(["Match ID", "Team Name", "Player Name", "Player Nickname", "Country Name"])
+        for data in lineup:
+            writer.writerow([data['match_id'], data['team_name'], data['player_name'], data['player_nickname'], data['country_name']])
+    
+    # Writing LineupPositions to CSV
+    with open('CSV/lineupPositions.csv', 'w', newline='', encoding='utf-8') as file:
+        writer = csv.writer(file)
+        writer.writerow(["Match ID", "Player Name", "Position ID", "Start From", "End To", "From Period", "To Period", "Start Reason", "End Reason"])
+        for data in lineupPositions:
+            writer.writerow([data['match_id'], data['player_name'] ,data['position_id'], data['startFrom'], data['endTo'], data['from_period'], data['to_period'], data['start_reason'], data['end_reason']])
+    
+    # Writing LineupCards to CSV
+    with open('CSV/lineupCards.csv', 'w', newline='', encoding='utf-8') as file:
+        writer = csv.writer(file)
+        writer.writerow(["Match ID", "Player Name", "Card Time", "Card Type", "Card Reason", "Period"])
+        for data in lineupCards:
+            writer.writerow([data['match_id'], data['player_name'], data['card_time'], data['card_type'], data['card_reason'], data['period']])
 
 if __name__ == "__main__":
     start = time.time()
     populatingTablesFromMatch()
+    populatingTablesFromLineups()
     populatingTablesFromEvents()
     toCSV()
-    print("Populating Tables from Matches.json")
-    print("Stadium Table")
-    # for stadiumData in substitution:
-    #     print(stadiumData)
-    print(len(player))
+    for card in player:
+        print(card)
     end = time.time()
 
     print("Time taken to populate Stadium Table: ", end-start)
