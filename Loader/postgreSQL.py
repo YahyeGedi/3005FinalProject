@@ -183,13 +183,13 @@ def importToPostgreSQL():
 
             
 def renewTables():
-    tableNames = ['Countries', 'Competitions', 'Events', 'Referee', 'Manager', 'Team', 'Stadium', 'Match', 'Position', 'Player', 'Tactic', 'PlayPattern', 'Pass', 'Shot', 'Dribble', 'badBehaviour', 'ballReceipt', 'ballRecovery', 'Block', 'Carry', 'Clearance', 'Duel', 'foulCommitted', 'foulWon', 'Goalkeeper', 'Interception', 'Substitution', 'lineup', 'lineupPositions', 'lineupCards']
+    tablesIhave = ['Countries', 'Competitions', 'Events', 'Referee', 'Manager', 'Team', 'Stadium', 'Match', 'Position', 'Player', 'Tactic', 'PlayPattern', 'Pass', 'Shot', 'Dribble', 'badBehaviour', 'ballReceipt', 'ballRecovery', 'Block', 'Carry', 'Clearance', 'Duel', 'foulCommitted', 'foulWon', 'Goalkeeper', 'Interception', 'Substitution', 'lineup', 'lineupPositions', 'lineupCards']
     indexNames = ['idx_shot_statsbomXg', 'idx_shot_playerName', 'idx_shot_firstTime', 'idx_pass_teamName', 'idx_pass_playerName', 'idx_shot_teamName', 'idx_dribble_outcomename']
     with psycopg.connect("dbname=project_database user=postgres password=1234") as db:
         with db.cursor() as cursor:
             for index in indexNames:
                 cursor.execute(f"DROP INDEX IF EXISTS {index} CASCADE")
-            for table in tableNames:
+            for table in tablesIhave:
                 cursor.execute(f"DROP TABLE IF EXISTS {table} CASCADE")
 
 
